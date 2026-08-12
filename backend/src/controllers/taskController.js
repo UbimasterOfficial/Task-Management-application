@@ -50,8 +50,12 @@ async function createTask(req, res, next) {
   try {
     const { title, description = '', priority = 'medium' } = req.body;
 
-    if (!title || !title.trim()) {
+    if (typeof title !== 'string' || !title.trim()) {
       return res.status(400).json({ message: 'Title is required' });
+    }
+
+    if (typeof description !== 'string') {
+      return res.status(400).json({ message: 'Description must be a string' });
     }
 
     if (!allowedPriorities.includes(priority)) {

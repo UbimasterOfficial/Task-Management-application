@@ -60,6 +60,23 @@ test('POST /api/tasks rejects a missing title', async () => {
   expect(response.body.message).toBe('Title is required');
 });
 
+test('POST /api/tasks rejects a non-string title', async () => {
+  const response = await request(app).post('/api/tasks').send({ title: 123 });
+
+  expect(response.statusCode).toBe(400);
+  expect(response.body.message).toBe('Title is required');
+});
+
+test('POST /api/tasks rejects a non-string description', async () => {
+  const response = await request(app).post('/api/tasks').send({
+    title: 'Build CI pipeline',
+    description: null,
+  });
+
+  expect(response.statusCode).toBe(400);
+  expect(response.body.message).toBe('Description must be a string');
+});
+
 test('POST /api/tasks creates a task', async () => {
   Task.create.mockResolvedValue({
     _id: taskId,

@@ -1,4 +1,8 @@
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+
+// Resolve the environment file from this source file so startup does not
+// depend on the directory from which Node was launched.
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const app = require('./app');
 const { connectDatabase } = require('./config/db');
 const logger = require('./config/logger');
