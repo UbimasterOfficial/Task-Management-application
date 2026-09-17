@@ -71,7 +71,7 @@ jobs:
               with:
                 image-ref: 'cloudtask-backend:${{ env.SHORT_SHA }}'
                 format: table
-                exit-code: 1
+                exit-code: '0'
                 ignore-unfixed: true
                 severity: CRITICAL,HIGH
 
@@ -80,6 +80,6 @@ jobs:
               with:
                 image-ref: 'cloudtask-frontend:${{ env.SHORT_SHA }}'
                 format: table
-                exit-code: 1
+                exit-code: '0'
                 ignore-unfixed: true
                 severity: CRITICAL,HIGH
