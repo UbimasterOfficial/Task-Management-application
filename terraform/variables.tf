@@ -5,6 +5,11 @@ variable "aws_region" {
 
 }
 
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "Task-Management"
+}
 
 variable "environment" {
   description = "The environment for the resources."
