@@ -25,6 +25,8 @@ Thumbs.db
 # Logs
 *.log
 
+# Local Docker overrides
+docker-compose.override.yml
+
 #Readme files
 README-Main.md
-
