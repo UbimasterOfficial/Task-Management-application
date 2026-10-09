@@ -14,7 +14,7 @@ FROM nginx:1.28-alpine
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 8080
+EXPOSE 5173
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/frontend-health || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:5173/frontend-health || exit 1
