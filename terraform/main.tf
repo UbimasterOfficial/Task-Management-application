@@ -10,9 +10,9 @@ resource "aws_vpc" "main" {
 
 #Create public subnet 01
 resource "aws_subnet" "public-01" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = var.availability_zones[0]
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = var.availability_zones[0]
   map_public_ip_on_launch = true
 
   tags = {
@@ -22,9 +22,9 @@ resource "aws_subnet" "public-01" {
 
 #create public subnet 02
 resource "aws_subnet" "public-02" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = var.availability_zones[1]
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = var.availability_zones[1]
   map_public_ip_on_launch = true
 
   tags = {
@@ -82,7 +82,7 @@ resource "aws_nat_gateway" "main_ngw" {
     Name = "main_nat_gateway"
   }
 
-  depends_on = [aws_internet_gateway.main_gw]  #Create the Internet Gateway before creating the NAT Gateway
+  depends_on = [aws_internet_gateway.main_gw] #Create the Internet Gateway before creating the NAT Gateway
 }
 
 # Create ideal route table for public subnet
@@ -119,7 +119,7 @@ resource "aws_route" "private_internet_access" {
 
 # Associate public subnet with route table
 resource "aws_route_table_association" "public_subnet_association" {
-    for_each = {
+  for_each = {
     public_01 = aws_subnet.public-01.id
     public_02 = aws_subnet.public-02.id
   }
@@ -149,21 +149,21 @@ resource "aws_security_group" "frontend_sg" {
     Name = "${var.project_name}-frontend-sg"
   }
 
-    ingress {
-        description = "Allow inbound traffic from ALB"
-        from_port   = 5173
-        to_port     = 5173
-        protocol    = "tcp"
-        cidr_blocks = [aws_security_group.lb_sg.id]
-    }
+  ingress {
+    description = "Allow inbound traffic from ALB"
+    from_port   = 5173
+    to_port     = 5173
+    protocol    = "tcp"
+    cidr_blocks = [aws_security_group.lb_sg.id]
+  }
 
-    egress {
-        description = "Allow all outbound traffic"
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
 }
 
@@ -177,20 +177,20 @@ resource "aws_security_group" "backend_sg" {
     Name = "${var.project_name}-backend-sg"
   }
 
-    ingress {
-        description = "Allow inbound traffic from ALB"
-        from_port   = 5000
-        to_port     = 5000
-        protocol    = "tcp"
-        cidr_blocks = [aws_security_group.lb_sg.id]
-    }
+  ingress {
+    description = "Allow inbound traffic from ALB"
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = [aws_security_group.lb_sg.id]
+  }
 
-    egress {
-        description = "Allow all outbound traffic"
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
 }
