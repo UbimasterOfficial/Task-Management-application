@@ -56,7 +56,7 @@ resource "aws_lb" "app_lb" {
 #Create the Frontend Target Group (This tell the ALB Where should frontend traffic go)
 resource "aws_lb_target_group" "frontend" {
   name        = "${var.project_name}-frontend-tg"
-  port        = 5173
+  port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
 
@@ -64,7 +64,7 @@ resource "aws_lb_target_group" "frontend" {
 
   health_check {
     enabled             = true
-    path                = "/health"
+    path                = "/"
     protocol            = "HTTP"
     port                = "traffic-port"
     healthy_threshold   = 2

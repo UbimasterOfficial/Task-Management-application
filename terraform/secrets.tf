@@ -8,7 +8,4 @@ resource "aws_secretsmanager_secret" "mongodb_uri" {
   }
 }
 
-output "mongodb_secret_arn" {
-  description = "ARN of the MongoDB URI secret"
-  value       = aws_secretsmanager_secret.mongodb_uri.arn
-}
+

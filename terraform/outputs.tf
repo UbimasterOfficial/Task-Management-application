@@ -20,3 +20,8 @@ output "alb_zone_id" {
   description = "Hosted zone ID of the load balancer"
   value       = aws_lb.app_lb.zone_id
 }
+
+output "mongodb_secret_arn" {
+  description = "ARN of the MongoDB URI secret"
+  value       = aws_secretsmanager_secret.mongodb_uri.arn
+}

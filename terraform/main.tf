@@ -151,10 +151,10 @@ resource "aws_security_group" "frontend_sg" {
 
   ingress {
     description = "Allow inbound traffic from ALB"
-    from_port   = 5173
-    to_port     = 5173
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = [aws_security_group.lb_sg.id]
+    security_groups = [aws_security_group.lb_sg.id]
   }
 
   egress {
@@ -182,7 +182,7 @@ resource "aws_security_group" "backend_sg" {
     from_port   = 5000
     to_port     = 5000
     protocol    = "tcp"
-    cidr_blocks = [aws_security_group.lb_sg.id]
+    security_groups = [aws_security_group.lb_sg.id]
   }
 
   egress {

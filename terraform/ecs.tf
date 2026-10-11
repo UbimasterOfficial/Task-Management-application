@@ -34,8 +34,8 @@ resource "aws_ecs_task_definition" "frontend" {
 
       portMappings = [
         {
-          containerPort = 5173
-          hostPort      = 5173
+          containerPort = 8080
+          hostPort      = 8080
           protocol      = "tcp"
         }
       ]
@@ -47,8 +47,9 @@ resource "aws_ecs_task_definition" "frontend" {
         }
       ]
 
-      dependsOn = [
-        aws_cloudwatch_log_group.frontend
+      depends_on = [
+        aws_cloudwatch_log_group.frontend,
+        aws_iam_role_policy_attachment.ecs_task_execution
       ]
 
       logConfiguration = {
@@ -83,7 +84,7 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode([
     {
       name      = "backend"
-      image     = "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/cloudtask-backend:latest"
+      image     = "${aws_ecr_repository.backend.repository_url}:latest"
       essential = true
 
       portMappings = [
@@ -112,8 +113,9 @@ resource "aws_ecs_task_definition" "backend" {
         }
       ]
 
-      dependsOn = [
+      depends_on = [
         aws_cloudwatch_log_group.backend,
+        aws_iam_role_policy_attachment.ecs_task_execution,
         aws_iam_role_policy.ecs_read_mongodb_secret
       ]
 
@@ -133,8 +135,6 @@ resource "aws_ecs_task_definition" "backend" {
     Name = "${var.project_name}-backend-task"
   }
 }
-
-
 
 
 
@@ -164,7 +164,7 @@ resource "aws_ecs_service" "frontend" {
   load_balancer {
     target_group_arn = aws_lb_target_group.frontend.arn
     container_name   = "frontend"
-    container_port   = 5173
+    container_port   = 8080
   }
 
   depends_on = [
@@ -172,3 +172,35 @@ resource "aws_ecs_service" "frontend" {
   ]
 }
 
+# Create Backend ECS service
+
+resource "aws_ecs_service" "backend" {
+  name             = "${var.project_name}-backend-service"
+  cluster          = aws_ecs_cluster.ecs_main.id
+  task_definition  = aws_ecs_task_definition.backend.arn
+  desired_count    = 1
+  launch_type      = "FARGATE"
+  platform_version = "LATEST"
+
+  network_configuration {
+    subnets = [
+      aws_subnet.private-01.id,
+      aws_subnet.private-02.id
+    ]
+
+    security_groups  = [aws_security_group.backend_sg.id]
+    assign_public_ip = false
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.backend.arn
+    container_name   = "backend"
+    container_port   = 5000
+  }
+
+  depends_on = [
+    aws_lb_listener.http,
+    aws_iam_role_policy_attachment.ecs_task_execution,
+    aws_iam_role_policy.ecs_read_mongodb_secret
+  ]
+}
