@@ -11,6 +11,18 @@ output "backend_ecr_repository_url" {
   value       = aws_ecr_repository.backend.repository_url
 }
 
+# Frontend ECS service
+output "frontend_ecs_service_name" {
+  description = "Name of the frontend ECS service"
+  value       = aws_ecs_service.frontend.name
+}
+
+# Backend ECS service
+output "backend_ecs_service_name" {
+  description = "Name of the backend ECS service"
+  value       = aws_ecs_service.backend.name
+}
+
 output "alb_dns_name" {
   description = "Public DNS name of the application load balancer"
   value       = aws_lb.app_lb.dns_name

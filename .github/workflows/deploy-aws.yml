@@ -1,0 +1,15 @@
+name: Deploy to AWS ECS
+on:
+    push:
+        branches:
+        - main
+
+permissions:
+    contents: read
+    id-token: write
+
+env:
+    AWS_REGION: us-east-1
+    ECR_REPOSITORY: 
+    ECS_CLUSTER: 
+    ECS_SERVICE: 
