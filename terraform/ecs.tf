@@ -8,85 +8,10 @@ resource "aws_ecs_cluster" "ecs_main" {
   }
 }
 
-# ECS IAM execution role (Before creating ECS task definitions, ECS needs an IAM role)
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.project_name}-ecs-task-execution-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Effect = "Allow"
-
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-
-  tags = {
-    Name = "${var.project_name}-ecs-task-execution-role"
-  }
-}
-
 # Attach the AWS-managed ECS execution policy
 resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-# ECS task definitions for Frontend
-
-resource "aws_ecs_task_definition" "frontend" {
-  family                   = "${var.project_name}-frontend"
-  requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc"
-
-  cpu    = "256"
-  memory = "512"
-
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-
-  container_definitions = jsonencode([
-    {
-      name      = "frontend"
-      image     = "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/cloudtask-frontend:latest"
-      essential = true
-
-      portMappings = [
-        {
-          containerPort = 5173
-          hostPort      = 5173
-          protocol      = "tcp"
-        }
-      ]
-
-      environment = [
-        {
-          name  = "VITE_API_URL"
-          value = "/api"
-        }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-
-        options = {
-          "awslogs-group"         = "/ecs/${var.project_name}/frontend"
-          "awslogs-region"        = "us-east-1"
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-    }
-  ])
-
-  tags = {
-    Name = "${var.project_name}-frontend-task"
-  }
 }
 
 
@@ -104,7 +29,7 @@ resource "aws_ecs_task_definition" "frontend" {
   container_definitions = jsonencode([
     {
       name      = "frontend"
-      image     = "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/cloudtask-frontend:latest"
+      image     = "${aws_ecr_repository.frontend.repository_url}:latest"
       essential = true
 
       portMappings = [
@@ -120,6 +45,10 @@ resource "aws_ecs_task_definition" "frontend" {
           name  = "VITE_API_URL"
           value = "/api"
         }
+      ]
+
+      dependsOn = [
+        aws_cloudwatch_log_group.frontend
       ]
 
       logConfiguration = {
@@ -139,6 +68,71 @@ resource "aws_ecs_task_definition" "frontend" {
   }
 }
 
+# Create ECS task definitions for Backend
+
+resource "aws_ecs_task_definition" "backend" {
+  family                   = "${var.project_name}-backend"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+
+  cpu    = "256"
+  memory = "512"
+
+  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "backend"
+      image     = "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/cloudtask-backend:latest"
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 5000
+          hostPort      = 5000
+          protocol      = "tcp"
+        }
+      ]
+
+      environment = [
+        {
+          name  = "PORT"
+          value = "5000"
+        },
+        {
+          name  = "NODE_ENV"
+          value = "production"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "MONGODB_URI"
+          valueFrom = aws_secretsmanager_secret.mongodb_uri.arn
+        }
+      ]
+
+      dependsOn = [
+        aws_cloudwatch_log_group.backend,
+        aws_iam_role_policy.ecs_read_mongodb_secret
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          "awslogs-group"         = "/ecs/${var.project_name}/backend"
+          "awslogs-region"        = "us-east-1"
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+    }
+  ])
+
+  tags = {
+    Name = "${var.project_name}-backend-task"
+  }
+}
 
 
 
