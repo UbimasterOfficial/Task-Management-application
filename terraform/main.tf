@@ -150,10 +150,10 @@ resource "aws_security_group" "frontend_sg" {
   }
 
   ingress {
-    description = "Allow inbound traffic from ALB"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
+    description     = "Allow inbound traffic from ALB"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
     security_groups = [aws_security_group.lb_sg.id]
   }
 
@@ -178,10 +178,10 @@ resource "aws_security_group" "backend_sg" {
   }
 
   ingress {
-    description = "Allow inbound traffic from ALB"
-    from_port   = 5000
-    to_port     = 5000
-    protocol    = "tcp"
+    description     = "Allow inbound traffic from ALB"
+    from_port       = 5000
+    to_port         = 5000
+    protocol        = "tcp"
     security_groups = [aws_security_group.lb_sg.id]
   }
 
