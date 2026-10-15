@@ -34,7 +34,7 @@ The main goal is to demonstrate how a simple web application can move from local
 - [Monitoring and Troubleshooting](#monitoring-and-troubleshooting)
 - [Security Practices](#security-practices)
 - [Key Learning Outcomes](#key-learning-outcomes)
-- [Future Improvements](#future-improvements)
+- [Project Screenshots](#project-screenshots)
 - [Author](#author)
 
 ---
@@ -767,18 +767,9 @@ This project provides practical experience with:
 - Connecting applications to MongoDB Atlas.
 - Using health checks, logs, and monitoring for troubleshooting.
 
-## Future Improvements
+## Project Screenshots
 
-Possible future improvements include:
 
-- Adding more automated test coverage.
-- Introducing dependency update automation.
-- Improving container image hardening.
-- Adding HTTPS with AWS Certificate Manager.
-- Improving alerting and monitoring dashboards.
-- Documenting recovery and rollback procedures.
-- Adding additional infrastructure validation and security checks.
-- Reviewing AWS resource costs and reducing unnecessary resources.
 
 ## Author
 
