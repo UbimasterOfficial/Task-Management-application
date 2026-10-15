@@ -769,6 +769,10 @@ This project provides practical experience with:
 
 ## Project Screenshots
 
+<img width="1920" height="1403" alt="Task Management Application" src="https://github.com/user-attachments/assets/e8d1e937-a679-49c0-b102-07cc3a5e3925" /> <br>
+<br>
+<img width="1919" height="1029" alt="image" src="https://github.com/user-attachments/assets/3d87a530-141e-40b3-8039-99a2e135ad98" />
+
 
 
 ## Author
