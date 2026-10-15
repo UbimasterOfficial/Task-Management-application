@@ -1,15 +1,87 @@
+
 name: Deploy to AWS ECS
 on:
-    push:
-        branches:
-        - main
+
+    #push:
+        #branches:
+       # - main
+    
+    workflow_dispatch:
+    
 
 permissions:
     contents: read
     id-token: write
 
 env:
-    AWS_REGION: us-east-1
-    ECR_REPOSITORY: 
-    ECS_CLUSTER: 
-    ECS_SERVICE: 
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  BACKEND_ECR_REPOSITORY: ${{ vars.BACKEND_ECR_REPOSITORY }}
+  FRONTEND_ECR_REPOSITORY: ${{ vars.FRONTEND_ECR_REPOSITORY }}
+  BACKEND_ECS_SERVICE: ${{ vars.BACKEND_ECS_SERVICE }}
+  FRONTEND_ECS_SERVICE: ${{ vars.FRONTEND_ECS_SERVICE }}
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7.0.1
+
+            - name: Configure AWS credentials with GitHUb OIDC
+              uses: aws-actions/configure-aws-credentials@v6.2.3
+              with:
+                  role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+                  aws-region: ${{ env.AWS_REGION }}
+
+            - name: Log in to Amazon ECR
+              id: ecr-login
+              uses: aws-actions/amazon-ecr-login@v2.1.6
+
+            - name: Build and push images
+              env:
+                  ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  docker build -t "$ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG" ./backend
+                  docker push "$ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG"
+
+                  docker build -t "$ECR_REGISTRY/$FRONTEND_ECR_REPOSITORY:$IMAGE_TAG" ./frontend
+                  docker push "$ECR_REGISTRY/$FRONTEND_ECR_REPOSITORY:$IMAGE_TAG"
+
+                  echo "BACKEND_IMAGE=$ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_ENV"
+                  echo "FRONTEND_IMAGE=$ECR_REGISTRY/$FRONTEND_ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_ENV"
+
+            - name: Render backend ECS task definition
+              id: backend-task
+              uses: aws-actions/amazon-ecs-render-task-definition@v1.0.2
+              with:
+                  task-definition: ./terraform/backend-task-def.json
+                  container-name: backend
+                  image: ${{ env.BACKEND_IMAGE }}
+
+
+            - name: Deploy backend ECS service
+              uses: aws-actions/amazon-ecs-deploy-task-definition@v2.6.3
+              with:
+                  task-definition: ${{ steps.backend-task.outputs.task-definition }}
+                  service: ${{ env.BACKEND_ECS_SERVICE }}
+                  cluster: ${{ env.ECS_CLUSTER }}
+                  wait-for-service-stability: true
+
+            - name: Render frontend ECS task definition
+              id: frontend-task
+              uses: aws-actions/amazon-ecs-render-task-definition@v1.0.2
+              with:
+                  task-definition: ./terraform/frontend-task-def.json
+                  container-name: frontend
+                  image: ${{ env.FRONTEND_IMAGE }}
+
+            - name: Deploy frontend ECS service
+              uses: aws-actions/amazon-ecs-deploy-task-definition@v2.6.3
+              with:
+                  task-definition: ${{ steps.frontend-task.outputs.task-definition }}
+                  service: ${{ env.FRONTEND_ECS_SERVICE }}
+                  cluster: ${{ env.ECS_CLUSTER }}
+                  wait-for-service-stability: true
+
